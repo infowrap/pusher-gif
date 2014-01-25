@@ -1,4 +1,4 @@
-/*! pusher-gif (v0.0.1) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
+/*! pusher-gif (v1.0.0) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
 // glif, a client-side image generator in javascript
 // Copyright (C) 2005 Jeff Epler
 
