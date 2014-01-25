@@ -3,13 +3,14 @@ angular.module("pusher-gif", [])
   api = {}
 
   api.make = (width, height) ->
-    area = width * height
+    area = Math.floor(width * height)
     pixels = new Array area
     pixels[_i] = 0 for index in [1...area] by 1
     make_glif width, height, pixels
 
   api
 ).directive("pusherGif", ["pusherGifService", (pusherGifService) ->
+  width = height = 0
 
   restrict:"A"
   scope:
@@ -17,8 +18,6 @@ angular.module("pusher-gif", [])
     calcHeight:'@'
     constrainWidth:'@'
   compile: (tElem, tAttrs) ->
-    width = height = 0
-
     if tAttrs.width and tAttrs.height
       width = +tAttrs.width
       height = +tAttrs.height
@@ -35,5 +34,6 @@ angular.module("pusher-gif", [])
             width = +scope.calcWidth
             height = +scope.calcHeight
           element.attr('src', pusherGifService.make(width, height))
+          width = height = 0
       return
 ])

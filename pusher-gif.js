@@ -3,7 +3,7 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
   api = {};
   api.make = function(width, height) {
     var area, index, pixels, _i;
-    area = width * height;
+    area = Math.floor(width * height);
     pixels = new Array(area);
     for (index = _i = 1; _i < area; index = _i += 1) {
       pixels[_i] = 0;
@@ -13,6 +13,8 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
   return api;
 }).directive("pusherGif", [
   "pusherGifService", function(pusherGifService) {
+    var height, width;
+    width = height = 0;
     return {
       restrict: "A",
       scope: {
@@ -21,8 +23,6 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
         constrainWidth: '@'
       },
       compile: function(tElem, tAttrs) {
-        var height, width;
-        width = height = 0;
         if (tAttrs.width && tAttrs.height) {
           width = +tAttrs.width;
           height = +tAttrs.height;
@@ -39,6 +39,7 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
                 height = +scope.calcHeight;
               }
               element.attr('src', pusherGifService.make(width, height));
+              width = height = 0;
             }
           }
         };
