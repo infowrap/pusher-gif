@@ -10,7 +10,6 @@ angular.module("pusher-gif", [])
 
   api
 ).directive("pusherGif", ["pusherGifService", (pusherGifService) ->
-  width = height = 0
 
   restrict:"A"
   scope:
@@ -24,16 +23,13 @@ angular.module("pusher-gif", [])
       tElem.attr('src', pusherGifService.make(width, height))
 
     return (scope, element, attrs) ->
-      if width is 0 and height is 0
+      if scope.calcWidth and scope.calcHeight
         # width came from a binding
-        if scope.calcWidth and scope.calcHeight
-          if scope.constrainWidth
-            width = +scope.constrainWidth
-            height = (+scope.calcHeight/+scope.calcWidth) * +scope.constrainWidth
-          else
-            width = +scope.calcWidth
-            height = +scope.calcHeight
-          element.attr('src', pusherGifService.make(width, height))
-          width = height = 0
-      return
+        if scope.constrainWidth
+          width = +scope.constrainWidth
+          height = (+scope.calcHeight/+scope.calcWidth) * +scope.constrainWidth
+        else
+          width = +scope.calcWidth
+          height = +scope.calcHeight
+        element.attr('src', pusherGifService.make(width, height))
 ])

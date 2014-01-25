@@ -1,4 +1,4 @@
-/*! pusher-gif (v1.0.3) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
+/*! pusher-gif (v1.0.4) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
 // glif, a client-side image generator in javascript
 // Copyright (C) 2005 Jeff Epler
 
@@ -103,8 +103,6 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
   return api;
 }).directive("pusherGif", [
   "pusherGifService", function(pusherGifService) {
-    var height, width;
-    width = height = 0;
     return {
       restrict: "A",
       scope: {
@@ -113,24 +111,22 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
         constrainWidth: '@'
       },
       compile: function(tElem, tAttrs) {
+        var height, width;
         if (tAttrs.width && tAttrs.height) {
           width = +tAttrs.width;
           height = +tAttrs.height;
           tElem.attr('src', pusherGifService.make(width, height));
         }
         return function(scope, element, attrs) {
-          if (width === 0 && height === 0) {
-            if (scope.calcWidth && scope.calcHeight) {
-              if (scope.constrainWidth) {
-                width = +scope.constrainWidth;
-                height = (+scope.calcHeight / +scope.calcWidth) * +scope.constrainWidth;
-              } else {
-                width = +scope.calcWidth;
-                height = +scope.calcHeight;
-              }
-              element.attr('src', pusherGifService.make(width, height));
-              width = height = 0;
+          if (scope.calcWidth && scope.calcHeight) {
+            if (scope.constrainWidth) {
+              width = +scope.constrainWidth;
+              height = (+scope.calcHeight / +scope.calcWidth) * +scope.constrainWidth;
+            } else {
+              width = +scope.calcWidth;
+              height = +scope.calcHeight;
             }
+            return element.attr('src', pusherGifService.make(width, height));
           }
         };
       }
