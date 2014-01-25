@@ -1,0 +1,26 @@
+{
+  "name": "pusher-gif",
+  "version": "0.0.1",
+  "homepage": "https://github.com/infowrap/pusher-gif",
+  "authors": [
+    "Nathan Walker <nathan.walker@infowrap.com>",
+    "Kirk Strobeck <kirk.strobeck@infowrap.com>"
+  ],
+  "main": "js/pusher-gif.js",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "lib",
+    "css",
+    "less",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.2.*-build",
+    "jquery": "git@github.com:infowrap/jquery.git#1.10.2",
+    "base64": "git@github.com:infowrap/base64.git#1.0.0"
+  }
+}
