@@ -1,4 +1,4 @@
-/*! pusher-gif (v0.0.1) - Copyright: 2013, MIT */
+/*! pusher-gif (v0.0.1) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
 // glif, a client-side image generator in javascript
 // Copyright (C) 2005 Jeff Epler
 
@@ -66,16 +66,30 @@ function make_glif(w,h,d,fr,fg,fb) {
     return "data:image/gif;base64," + B64.encode(gif);
 }
 
-var pusherMake;
-
-pusherMake = function(width, height) {
-  var area, index, pixels, _i;
-  area = width * height;
-  pixels = new Array(area);
-  for (index = _i = 1; _i < area; index = _i += 1) {
-    pixels[_i] = 0;
+angular.module("pusher-gif", []).factory("pusherGifService", function() {
+  var api;
+  api = {};
+  api.make = function(width, height) {
+    var area, index, pixels, _i;
+    area = width * height;
+    pixels = new Array(area);
+    for (index = _i = 1; _i < area; index = _i += 1) {
+      pixels[_i] = 0;
+    }
+    return make_glif(width, height, pixels);
+  };
+  return api;
+}).directive("pusherGif", [
+  "pusherGifService", function(pusherGifService) {
+    return {
+      restrict: "A",
+      compile: function(tElem, tAttrs) {
+        var height, width;
+        width = +tAttrs.width;
+        height = +tAttrs.height;
+        tElem.attr('src', pusherGifService.make(width, height));
+        return function(scope, element, attrs) {};
+      }
+    };
   }
-  return make_glif(width, height, pixels);
-};
-
-document.write("<img src=\"" + (pusherMake(300, 100)) + "\">");
+]);

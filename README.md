@@ -8,7 +8,7 @@ npm install
 bower install
 ```
 
-####Build Code
+####Build
 
 ```
 grunt

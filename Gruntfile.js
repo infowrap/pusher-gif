@@ -12,7 +12,7 @@ module.exports = function (grunt) {
 
     require("matchdep").filterDev("grunt-*").forEach(grunt.loadNpmTasks);
 
-    var banner = '/*! <%= pkg.name %> (v<%= pkg.version %>) - Copyright: 2013, <%= pkg.license %> */\n';
+    var banner = '/*! <%= pkg.name %> (v<%= pkg.version %>) - Copyright: 2013, <%= pkg.authors %> <%= pkg.license %> */\n';
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('bower.json'),
