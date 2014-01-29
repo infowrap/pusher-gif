@@ -58,8 +58,8 @@ angular.module("pusher-gif", [])
             headers:
               'X-Auth-Token':undefined
           $http(config).then (result) ->
-            if result and result.width and result.height
-              setElSrc(result.width, result.height)
+            if result and result.data and result.data.width and result.data.height
+              setElSrc(result.data.width, result.data.height)
 
 
 ])

@@ -58,8 +58,8 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
                 }
               };
               return $http(config).then(function(result) {
-                if (result && result.width && result.height) {
-                  return setElSrc(result.width, result.height);
+                if (result && result.data && result.data.width && result.data.height) {
+                  return setElSrc(result.data.width, result.data.height);
                 }
               });
             }
