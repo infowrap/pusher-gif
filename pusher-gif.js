@@ -11,8 +11,46 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
     return make_glif(width, height, pixels);
   };
   return api;
-}).directive("pusherGif", [
-  "pusherGifService", "$http", function(pusherGifService, $http) {
+}).factory("pusherGifFPHelperService", [
+  "$q", "$http", function($q, $http) {
+    var api;
+    api = {};
+    api.metaCache = {};
+    api.metadata = function(item) {
+      var baseUrl, config, defer, fpUrlParts, sigPolicy;
+      defer = $q.defer();
+      if (api.metaCache[item.url]) {
+        defer.resolve(api.metaCache[item.url]);
+      } else {
+        fpUrlParts = item.url.split('?');
+        baseUrl = fpUrlParts[0];
+        sigPolicy = '';
+        if (fpUrlParts.length > 1) {
+          sigPolicy = "&" + fpUrlParts[1];
+        }
+        config = {
+          method: 'GET',
+          url: "" + baseUrl + "/metadata?width=true&height=true" + sigPolicy,
+          headers: {
+            'X-Auth-Token': void 0
+          }
+        };
+        $http(config).then(function(result) {
+          if (result && result.data && result.data.width && result.data.height) {
+            api.metaCache[item.url] = {
+              width: result.data.width,
+              height: result.data.height
+            };
+            return defer.resolve(api.metaCache[item.url]);
+          }
+        });
+      }
+      return defer.promise;
+    };
+    return api;
+  }
+]).directive("pusherGif", [
+  "pusherGifService", "pusherGifFPHelperService", function(pusherGifService, fpHelper) {
     return {
       restrict: "A",
       scope: {
@@ -29,7 +67,7 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
           tElem.attr('src', pusherGifService.make(width, height));
         }
         return function(scope, element, attrs) {
-          var baseUrl, config, fpUrlParts, setElSrc, sigPolicy;
+          var setElSrc;
           setElSrc = function(calcWidth, calcHeight) {
             if (scope.constrainWidth) {
               width = +scope.constrainWidth;
@@ -44,23 +82,8 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
             if (scope.calcWidth && scope.calcHeight) {
               return setElSrc(scope.calcWidth, scope.calcHeight);
             } else if (scope.fpFallback) {
-              fpUrlParts = scope.fpFallback.url.split('?');
-              baseUrl = fpUrlParts[0];
-              sigPolicy = '';
-              if (fpUrlParts.length > 1) {
-                sigPolicy = "&" + fpUrlParts[1];
-              }
-              config = {
-                method: 'GET',
-                url: "" + baseUrl + "/metadata?width=true&height=true" + sigPolicy,
-                headers: {
-                  'X-Auth-Token': void 0
-                }
-              };
-              return $http(config).then(function(result) {
-                if (result && result.data && result.data.width && result.data.height) {
-                  return setElSrc(result.data.width, result.data.height);
-                }
+              return fpHelper.metadata(scope.fpFallback).then(function(dimensions) {
+                return setElSrc(dimensions.width, dimensions.height);
               });
             }
           }

@@ -9,7 +9,38 @@ angular.module("pusher-gif", [])
     make_glif width, height, pixels
 
   api
-).directive("pusherGif", ["pusherGifService", "$http", (pusherGifService, $http) ->
+).factory("pusherGifFPHelperService", ["$q", "$http", ($q, $http) ->
+  api = {}
+
+  api.metaCache = {}
+
+  api.metadata = (item) ->
+    defer = $q.defer()
+    if api.metaCache[item.url]
+      defer.resolve(api.metaCache[item.url])
+    else
+      fpUrlParts = item.url.split('?')
+      baseUrl = fpUrlParts[0]
+      sigPolicy = ''
+      if fpUrlParts.length > 1
+        sigPolicy = "&#{fpUrlParts[1]}"
+      # explicitly set 'X-Auth-Token' to undefined to strip the header in case project sets $http defaults
+      # filepicker does not allow that header
+      config =
+        method:'GET'
+        url:"#{baseUrl}/metadata?width=true&height=true#{sigPolicy}"
+        headers:
+          'X-Auth-Token':undefined
+      $http(config).then (result) ->
+        if result and result.data and result.data.width and result.data.height
+          api.metaCache[item.url] =
+            width: result.data.width
+            height: result.data.height
+          defer.resolve(api.metaCache[item.url])
+    defer.promise
+
+  api
+]).directive("pusherGif", ["pusherGifService", "pusherGifFPHelperService", (pusherGifService, fpHelper) ->
 
   restrict:"A"
   scope:
@@ -45,21 +76,8 @@ angular.module("pusher-gif", [])
           # if calcWidth and calcHeight were undefined and the 'src' is still not set, then the dimensions were not known
           # we must get them via a 'metadata' call to filepicker
           # fpFallback should be an object with a 'url' property
-          fpUrlParts = scope.fpFallback.url.split('?')
-          baseUrl = fpUrlParts[0]
-          sigPolicy = ''
-          if fpUrlParts.length > 1
-            sigPolicy = "&#{fpUrlParts[1]}"
-          # explicitly set 'X-Auth-Token' to undefined to strip the header in case project sets $http defaults
-          # filepicker does not allow that header
-          config =
-            method:'GET'
-            url:"#{baseUrl}/metadata?width=true&height=true#{sigPolicy}"
-            headers:
-              'X-Auth-Token':undefined
-          $http(config).then (result) ->
-            if result and result.data and result.data.width and result.data.height
-              setElSrc(result.data.width, result.data.height)
+          fpHelper.metadata(scope.fpFallback).then (dimensions) ->
+            setElSrc(dimensions.width, dimensions.height)
 
 
 ])
