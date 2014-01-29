@@ -1,4 +1,4 @@
-/*! pusher-gif (v1.0.5) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
+/*! pusher-gif (v1.0.6) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
 // glif, a client-side image generator in javascript
 // Copyright (C) 2005 Jeff Epler
 
@@ -119,7 +119,7 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
           tElem.attr('src', pusherGifService.make(width, height));
         }
         return function(scope, element, attrs) {
-          var baseUrl, fpUrlParts, setElSrc, sigPolicy;
+          var baseUrl, config, fpUrlParts, setElSrc, sigPolicy;
           setElSrc = function(calcWidth, calcHeight) {
             if (scope.constrainWidth) {
               width = +scope.constrainWidth;
@@ -140,10 +140,14 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
               if (fpUrlParts.length > 1) {
                 sigPolicy = "&" + fpUrlParts[1];
               }
-              return $http({
+              config = {
                 method: 'GET',
-                url: "" + baseUrl + "/metadata?width=true&height=true" + sigPolicy
-              }).then(function(result) {
+                url: "" + baseUrl + "/metadata?width=true&height=true" + sigPolicy,
+                headers: {
+                  'X-Auth-Token': void 0
+                }
+              };
+              return $http(config).then(function(result) {
                 if (result && result.width && result.height) {
                   return setElSrc(result.width, result.height);
                 }

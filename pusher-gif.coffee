@@ -50,7 +50,14 @@ angular.module("pusher-gif", [])
           sigPolicy = ''
           if fpUrlParts.length > 1
             sigPolicy = "&#{fpUrlParts[1]}"
-          $http({method:'GET', url:"#{baseUrl}/metadata?width=true&height=true#{sigPolicy}"}).then (result) ->
+          # explicitly set 'X-Auth-Token' to undefined to strip the header in case project sets $http defaults
+          # filepicker does not allow that header
+          config =
+            method:'GET'
+            url:"#{baseUrl}/metadata?width=true&height=true#{sigPolicy}"
+            headers:
+              'X-Auth-Token':undefined
+          $http(config).then (result) ->
             if result and result.width and result.height
               setElSrc(result.width, result.height)
 
