@@ -9,13 +9,14 @@ angular.module("pusher-gif", [])
     make_glif width, height, pixels
 
   api
-).directive("pusherGif", ["pusherGifService", (pusherGifService) ->
+).directive("pusherGif", ["pusherGifService", "$http", (pusherGifService, $http) ->
 
   restrict:"A"
   scope:
     calcWidth:'@'
     calcHeight:'@'
     constrainWidth:'@'
+    fpFallback:'=?'
   compile: (tElem, tAttrs) ->
     if tAttrs.width and tAttrs.height
       width = +tAttrs.width
@@ -23,13 +24,37 @@ angular.module("pusher-gif", [])
       tElem.attr('src', pusherGifService.make(width, height))
 
     return (scope, element, attrs) ->
-      if scope.calcWidth and scope.calcHeight
-        # width came from a binding
+      # linking function only used if src wasnt set by compile function above
+      # usually the case when calcWidth/calcHeight is being used (dynamic bindings)
+
+      setElSrc = (calcWidth, calcHeight) ->
         if scope.constrainWidth
           width = +scope.constrainWidth
-          height = (+scope.calcHeight/+scope.calcWidth) * +scope.constrainWidth
+          height = (+calcHeight/+calcWidth) * +scope.constrainWidth
         else
-          width = +scope.calcWidth
-          height = +scope.calcHeight
+          width = +calcWidth
+          height = +calcHeight
         element.attr('src', pusherGifService.make(width, height))
+
+      if _.isUndefined(element.attr('src'))
+        if scope.calcWidth and scope.calcHeight
+          # width came from a binding
+          setElSrc(scope.calcWidth, scope.calcHeight)
+        else if scope.fpFallback
+          # NOTE: Advanced and specific usage for integrations with filepicker (https://www.inkfilepicker.com/)
+          # if calcWidth and calcHeight were undefined and the 'src' is still not set, then the dimensions were not known
+          # we must get them via a 'metadata' call to filepicker
+          # fpFallback should be an object with a 'url' property
+          fpUrlParts = scope.fpFallback.url.split('?')
+          baseUrl = fpUrlParts[0]
+          sigPolicy = ''
+          if fpUrlParts.length > 1
+            sigPolicy = "&#{fpUrlParts[1]}"
+          $http({method:'GET', url:"#{baseUrl}/metadata?width=true&height=true#{sigPolicy}"}).then (result) ->
+            if result and result.width and result.height
+              setElSrc(result.width, result.height)
+
+
 ])
+
+

@@ -1,4 +1,4 @@
-/*! pusher-gif (v1.0.4) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
+/*! pusher-gif (v1.0.5) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
 // glif, a client-side image generator in javascript
 // Copyright (C) 2005 Jeff Epler
 
@@ -102,13 +102,14 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
   };
   return api;
 }).directive("pusherGif", [
-  "pusherGifService", function(pusherGifService) {
+  "pusherGifService", "$http", function(pusherGifService, $http) {
     return {
       restrict: "A",
       scope: {
         calcWidth: '@',
         calcHeight: '@',
-        constrainWidth: '@'
+        constrainWidth: '@',
+        fpFallback: '=?'
       },
       compile: function(tElem, tAttrs) {
         var height, width;
@@ -118,15 +119,36 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
           tElem.attr('src', pusherGifService.make(width, height));
         }
         return function(scope, element, attrs) {
-          if (scope.calcWidth && scope.calcHeight) {
+          var baseUrl, fpUrlParts, setElSrc, sigPolicy;
+          setElSrc = function(calcWidth, calcHeight) {
             if (scope.constrainWidth) {
               width = +scope.constrainWidth;
-              height = (+scope.calcHeight / +scope.calcWidth) * +scope.constrainWidth;
+              height = (+calcHeight / +calcWidth) * +scope.constrainWidth;
             } else {
-              width = +scope.calcWidth;
-              height = +scope.calcHeight;
+              width = +calcWidth;
+              height = +calcHeight;
             }
             return element.attr('src', pusherGifService.make(width, height));
+          };
+          if (_.isUndefined(element.attr('src'))) {
+            if (scope.calcWidth && scope.calcHeight) {
+              return setElSrc(scope.calcWidth, scope.calcHeight);
+            } else if (scope.fpFallback) {
+              fpUrlParts = scope.fpFallback.url.split('?');
+              baseUrl = fpUrlParts[0];
+              sigPolicy = '';
+              if (fpUrlParts.length > 1) {
+                sigPolicy = "&" + fpUrlParts[1];
+              }
+              return $http({
+                method: 'GET',
+                url: "" + baseUrl + "/metadata?width=true&height=true" + sigPolicy
+              }).then(function(result) {
+                if (result && result.width && result.height) {
+                  return setElSrc(result.width, result.height);
+                }
+              });
+            }
           }
         };
       }
