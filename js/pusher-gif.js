@@ -1,4 +1,4 @@
-/*! pusher-gif (v1.0.8) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
+/*! pusher-gif (v1.0.9) - Copyright: 2013, Nathan Walker <nathan.walker@infowrap.com>,Kirk Strobeck <kirk.strobeck@infowrap.com> MIT */
 // glif, a client-side image generator in javascript
 // Copyright (C) 2005 Jeff Epler
 
@@ -89,16 +89,29 @@ function make_glif(w,h,d,fr,fg,fb) {
 }
 
 angular.module("pusher-gif", []).factory("pusherGifService", function() {
-  var api;
+  var api, reduce;
+  reduce = function(numerator, denominator) {
+    var gcd;
+    gcd = gcd = function(a, b) {
+      if (b) {
+        return gcd(b, a % b);
+      } else {
+        return a;
+      }
+    };
+    gcd = gcd(numerator, denominator);
+    return [numerator / gcd, denominator / gcd];
+  };
   api = {};
   api.make = function(width, height) {
-    var area, index, pixels, _i;
-    area = Math.floor(width * height);
+    var area, index, pixels, ratio, _i;
+    ratio = reduce(Math.floor(width), Math.floor(height));
+    area = Math.floor(ratio[0] * ratio[1]);
     pixels = new Array(area);
     for (index = _i = 1; _i < area; index = _i += 1) {
       pixels[_i] = 0;
     }
-    return make_glif(width, height, pixels);
+    return make_glif(ratio[0], ratio[1], pixels);
   };
   return api;
 }).factory("pusherGifFPHelperService", [

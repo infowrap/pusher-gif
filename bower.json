@@ -1,6 +1,6 @@
 {
   "name": "pusher-gif",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "homepage": "https://github.com/infowrap/pusher-gif",
   "authors": [
     "Nathan Walker <nathan.walker@infowrap.com>",
@@ -20,5 +20,8 @@
   ],
   "dependencies": {
     "angular": "~1.2.*-build"
+  },
+  "devDependencies": {
+    "lodash": "~2.4.1"
   }
 }

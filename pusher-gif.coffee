@@ -1,12 +1,27 @@
 angular.module("pusher-gif", [])
 .factory("pusherGifService", () ->
+
+  # Reduce a fraction by finding the Greatest Common Divisor and dividing by it.
+  # http://stackoverflow.com/a/4652513/3126175
+  # helps keep the base64 string small as possible as well as minimizing cpu cycles to create the gif
+  reduce = (numerator, denominator) ->
+    gcd = gcd = (a, b) ->
+      (if b then gcd(b, a % b) else a)
+
+    gcd = gcd(numerator, denominator)
+    [
+      numerator / gcd
+      denominator / gcd
+    ]
+
   api = {}
 
   api.make = (width, height) ->
-    area = Math.floor(width * height)
+    ratio = reduce(Math.floor(width), Math.floor(height))
+    area = Math.floor(ratio[0] * ratio[1])
     pixels = new Array area
     pixels[_i] = 0 for index in [1...area] by 1
-    make_glif width, height, pixels
+    make_glif ratio[0], ratio[1], pixels
 
   api
 ).factory("pusherGifFPHelperService", ["$q", "$http", ($q, $http) ->
