@@ -13,15 +13,22 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
     return [numerator / gcd, denominator / gcd];
   };
   api = {};
+  api.gifCache = {};
   api.make = function(width, height) {
-    var area, index, pixels, ratio, _i;
+    var area, areaKey, index, pixels, ratio, _i;
     ratio = reduce(Math.floor(width), Math.floor(height));
     area = Math.floor(ratio[0] * ratio[1]);
-    pixels = new Array(area);
-    for (index = _i = 1; _i < area; index = _i += 1) {
-      pixels[_i] = 0;
+    areaKey = area.toString();
+    if (api.gifCache[areaKey]) {
+      return api.gifCache[areaKey];
+    } else {
+      pixels = new Array(area);
+      for (index = _i = 1; _i < area; index = _i += 1) {
+        pixels[_i] = 0;
+      }
+      api.gifCache[areaKey] = make_glif(ratio[0], ratio[1], pixels);
+      return api.gifCache[areaKey];
     }
-    return make_glif(ratio[0], ratio[1], pixels);
   };
   return api;
 }).factory("pusherGifFPHelperService", [

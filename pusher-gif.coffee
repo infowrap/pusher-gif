@@ -16,12 +16,20 @@ angular.module("pusher-gif", [])
 
   api = {}
 
+  api.gifCache = {}
+
   api.make = (width, height) ->
     ratio = reduce(Math.floor(width), Math.floor(height))
     area = Math.floor(ratio[0] * ratio[1])
-    pixels = new Array area
-    pixels[_i] = 0 for index in [1...area] by 1
-    make_glif ratio[0], ratio[1], pixels
+    areaKey = area.toString()
+    if api.gifCache[areaKey]
+      return api.gifCache[areaKey]
+    else
+      pixels = new Array area
+      pixels[_i] = 0 for index in [1...area] by 1
+      # cache base64 gif
+      api.gifCache[areaKey] = make_glif ratio[0], ratio[1], pixels
+      return api.gifCache[areaKey]
 
   api
 ).factory("pusherGifFPHelperService", ["$q", "$http", ($q, $http) ->
