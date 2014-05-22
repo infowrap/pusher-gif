@@ -32,38 +32,45 @@ angular.module("pusher-gif", [])
       return api.gifCache[areaKey]
 
   api
-).factory("pusherGifFPHelperService", ["$q", "$http", ($q, $http) ->
-  api = {}
+).provider("pusherGifFPHelper", ->
+  _fpHeaders = undefined
+  setFPHeaders: (headers) ->
+    _fpHeaders = headers
 
-  api.metaCache = {}
+  $get: ["$q", "$http", ($q, $http) ->
+    api = {}
 
-  api.metadata = (item) ->
-    defer = $q.defer()
-    if api.metaCache[item.url]
-      defer.resolve(api.metaCache[item.url])
-    else
-      fpUrlParts = item.url.split('?')
-      baseUrl = fpUrlParts[0]
-      sigPolicy = ''
-      if fpUrlParts.length > 1
-        sigPolicy = "&#{fpUrlParts[1]}"
-      # explicitly set 'X-Auth-Token' to undefined to strip the header in case project sets $http defaults
-      # filepicker does not allow that header
-      config =
-        method:'GET'
-        url:"#{baseUrl}/metadata?width=true&height=true#{sigPolicy}"
-        headers:
-          'X-Auth-Token':undefined
-      $http(config).then (result) ->
-        if result and result.data and result.data.width and result.data.height
-          api.metaCache[item.url] =
-            width: result.data.width
-            height: result.data.height
-          defer.resolve(api.metaCache[item.url])
-    defer.promise
+    api.metaCache = {}
 
-  api
-]).directive("pusherGif", ["pusherGifService", "pusherGifFPHelperService", (pusherGifService, fpHelper) ->
+    api.metadata = (item) ->
+      defer = $q.defer()
+      if api.metaCache[item.url]
+        defer.resolve(api.metaCache[item.url])
+      else
+        fpUrlParts = item.url.split('?')
+        baseUrl = fpUrlParts[0]
+        sigPolicy = ''
+        if fpUrlParts.length > 1
+          sigPolicy = "&#{fpUrlParts[1]}"
+        # explicitly set 'X-Auth-Token' to undefined to strip the header in case project sets $http defaults
+        # filepicker does not allow that header
+        config =
+          method:'GET'
+          url:"#{baseUrl}/metadata?width=true&height=true#{sigPolicy}"
+        if _fpHeaders
+          config.headers = _fpHeaders
+
+        $http(config).then (result) ->
+          if result and result.data and result.data.width and result.data.height
+            api.metaCache[item.url] =
+              width: result.data.width
+              height: result.data.height
+            defer.resolve(api.metaCache[item.url])
+      defer.promise
+
+    api
+  ]
+).directive("pusherGif", ["pusherGifService", "pusherGifFPHelper", (pusherGifService, fpHelper) ->
 
   restrict:"A"
   scope:

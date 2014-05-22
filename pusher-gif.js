@@ -31,46 +31,55 @@ angular.module("pusher-gif", []).factory("pusherGifService", function() {
     }
   };
   return api;
-}).factory("pusherGifFPHelperService", [
-  "$q", "$http", function($q, $http) {
-    var api;
-    api = {};
-    api.metaCache = {};
-    api.metadata = function(item) {
-      var baseUrl, config, defer, fpUrlParts, sigPolicy;
-      defer = $q.defer();
-      if (api.metaCache[item.url]) {
-        defer.resolve(api.metaCache[item.url]);
-      } else {
-        fpUrlParts = item.url.split('?');
-        baseUrl = fpUrlParts[0];
-        sigPolicy = '';
-        if (fpUrlParts.length > 1) {
-          sigPolicy = "&" + fpUrlParts[1];
-        }
-        config = {
-          method: 'GET',
-          url: "" + baseUrl + "/metadata?width=true&height=true" + sigPolicy,
-          headers: {
-            'X-Auth-Token': void 0
-          }
-        };
-        $http(config).then(function(result) {
-          if (result && result.data && result.data.width && result.data.height) {
-            api.metaCache[item.url] = {
-              width: result.data.width,
-              height: result.data.height
+}).provider("pusherGifFPHelper", function() {
+  var _fpHeaders;
+  _fpHeaders = void 0;
+  return {
+    setFPHeaders: function(headers) {
+      return _fpHeaders = headers;
+    },
+    $get: [
+      "$q", "$http", function($q, $http) {
+        var api;
+        api = {};
+        api.metaCache = {};
+        api.metadata = function(item) {
+          var baseUrl, config, defer, fpUrlParts, sigPolicy;
+          defer = $q.defer();
+          if (api.metaCache[item.url]) {
+            defer.resolve(api.metaCache[item.url]);
+          } else {
+            fpUrlParts = item.url.split('?');
+            baseUrl = fpUrlParts[0];
+            sigPolicy = '';
+            if (fpUrlParts.length > 1) {
+              sigPolicy = "&" + fpUrlParts[1];
+            }
+            config = {
+              method: 'GET',
+              url: "" + baseUrl + "/metadata?width=true&height=true" + sigPolicy
             };
-            return defer.resolve(api.metaCache[item.url]);
+            if (_fpHeaders) {
+              config.headers = _fpHeaders;
+            }
+            $http(config).then(function(result) {
+              if (result && result.data && result.data.width && result.data.height) {
+                api.metaCache[item.url] = {
+                  width: result.data.width,
+                  height: result.data.height
+                };
+                return defer.resolve(api.metaCache[item.url]);
+              }
+            });
           }
-        });
+          return defer.promise;
+        };
+        return api;
       }
-      return defer.promise;
-    };
-    return api;
-  }
-]).directive("pusherGif", [
-  "pusherGifService", "pusherGifFPHelperService", function(pusherGifService, fpHelper) {
+    ]
+  };
+}).directive("pusherGif", [
+  "pusherGifService", "pusherGifFPHelper", function(pusherGifService, fpHelper) {
     return {
       restrict: "A",
       scope: {
